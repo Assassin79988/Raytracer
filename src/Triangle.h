@@ -71,7 +71,7 @@ Vec3 raytracer::Triangle::baryCentric(const Vec3& point) const {
 Vec3 raytracer::Triangle::computeNormal(const Vec3& p1, const Vec3& p2, const Vec3& p3) const {
     Vec3 v12 = p2 - p1;
     Vec3 v13 = p3 - p1;
-    return v12.cross(v13);
+    return v13.cross(v12);
 }
 
 #endif

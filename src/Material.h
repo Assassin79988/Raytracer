@@ -5,8 +5,6 @@
 #include <math.h>
 #include <iostream>
 
-#define MAX(a,b) (a<b)?b:a
-
 namespace raytracer {
 	class Material;
 }
@@ -21,54 +19,24 @@ private:
 	Colour ambientColour = red();
 	Colour diffuseColour = Colour(230, 216, 173);
 	Colour specularColor = white();
-
-	uchar clamp(int color) const;
 public:
 	Material() {}
+
+	Colour getAmbientColor() { return ambientColour; }
+	Colour getDiffuseColor() { return diffuseColour; }
+	Colour getSpecularColor() { return specularColor; }
+	float getSpecularExp() { return specularExponent_; }
+	float getKa() { return ka_; }
+	float getKd() { return kd_; }
+	float getKs() { return ks_; }
 
 	void setAmbientColor(Colour colour) { ambientColour = colour; }
 	void setDiffuseColor(Colour colour) { diffuseColour = colour; }
 	void setSpecularColor(Colour colour) { specularColor = colour; }
 	void setSpecularExp(float specularExponent) { specularExponent_ = specularExponent; }
-
-	Colour phong(Vec3 viewer, Vec3 normal, Vec3 lightVector) const;
-	Colour blinnPhong(Vec3 viewer, Vec3 normal, Vec3 lightVector) const;
+	void setKa(float ka) { ka_ = ka; }
+	void setKd(float kd) { kd_ = kd; }
+	void setKs(float ks) { ks_ = ks; }
 };
-
-uchar raytracer::Material::clamp(int color) const {
-	if (color < 0) return 0;
-	if (color >= 255) return 255;
-	return color;
-}
-
-Colour raytracer::Material::phong(Vec3 viewer, Vec3 normal, Vec3 lightVector) const {
-	float diffuseTerm = MAX(lightVector.dot(normal), 0);
-
-	Vec3 relfectedLight = 2 * lightVector.dot(normal) * normal - lightVector;
-	relfectedLight.normalize();
-
-	float specularTerm = pow(MAX(relfectedLight.dot(viewer), 0), specularExponent_);
-	//if (diffuseTerm < 0.01) std::cout << relfectedLight.dot(viewer) <<  "\t" << pow(relfectedLight.dot(viewer), specularExponent_) << std::endl;
-	Colour colour(0,0,0);
-	colour[0] = clamp(ka_ * ambientColour[0] + kd_ * diffuseColour[0] * diffuseTerm + ks_ * specularColor[0] * specularTerm);
-	colour[1] = clamp(ka_ * ambientColour[1] + kd_ * diffuseColour[1] * diffuseTerm + ks_ * specularColor[1] * specularTerm);
-	colour[2] = clamp(ka_ * ambientColour[2] + kd_ * diffuseColour[2] * diffuseTerm + ks_ * specularColor[2] * specularTerm);
-	return colour;
-}
-
-Colour raytracer::Material::blinnPhong(Vec3 viewer, Vec3 normal, Vec3 lightVector) const {
-	float diffuseTerm = MAX(lightVector.dot(normal), 0);
-
-	Vec3 halfVector = (viewer + lightVector) / 2.0f;
-	halfVector.normalize();
-
-	float specularTerm = pow(MAX(halfVector.dot(normal), 0), specularExponent_);
-	//if (diffuseTerm < 0.01) std::cout << relfectedLight.dot(viewer) <<  "\t" << pow(relfectedLight.dot(viewer), specularExponent_) << std::endl;
-	Colour colour(0, 0, 0);
-	colour[0] = clamp(ka_ * ambientColour[0] + kd_ * diffuseColour[0] * diffuseTerm + ks_ * specularColor[0] * specularTerm);
-	colour[1] = clamp(ka_ * ambientColour[1] + kd_ * diffuseColour[1] * diffuseTerm + ks_ * specularColor[1] * specularTerm);
-	colour[2] = clamp(ka_ * ambientColour[2] + kd_ * diffuseColour[2] * diffuseTerm + ks_ * specularColor[2] * specularTerm);
-	return colour;
-}
 
 #endif
