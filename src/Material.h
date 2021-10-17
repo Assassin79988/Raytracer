@@ -13,18 +13,23 @@ namespace raytracer {
 
 class raytracer::Material {
 private:
-	float ks_ = 0.7;
-	float kd_ = 0.6;
-	float ka_ = 0.1;
-	float specularExponent_ = 13;
+	float ks_ = 0.7f;
+	float kd_ = 0.7f;
+	float ka_ = 0.1f;
+	float specularExponent_ = 10;
 
-	Colour ambientColour = black();
-	Colour diffuseColour = blue();
+	Colour ambientColour = red();
+	Colour diffuseColour = Colour(230, 216, 173);
 	Colour specularColor = white();
 
 	uchar clamp(int color) const;
 public:
 	Material() {}
+
+	void setAmbientColor(Colour colour) { ambientColour = colour; }
+	void setDiffuseColor(Colour colour) { diffuseColour = colour; }
+	void setSpecularColor(Colour colour) { specularColor = colour; }
+	void setSpecularExp(float specularExponent) { specularExponent_ = specularExponent; }
 
 	Colour phong(Vec3 viewer, Vec3 normal, Vec3 lightVector) const;
 	Colour blinnPhong(Vec3 viewer, Vec3 normal, Vec3 lightVector) const;

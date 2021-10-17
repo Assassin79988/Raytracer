@@ -11,8 +11,9 @@ namespace raytracer {
 class raytracer::Camera {
 private:
 	const Vec3 DEFAULT_POSITION = Vec3(0.0, 0.0, 0.0);
-
+	// TODO: Rotation
 	Vec3 position_;
+	Vec3 rotation_;
 public:
 	Camera() : position_(DEFAULT_POSITION) {}
 	Camera(Vec3 position) : position_(position) {}
