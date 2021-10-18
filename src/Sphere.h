@@ -2,6 +2,7 @@
 #define SPHERE_H_
 
 #include "Object.h"
+#include <iostream>
 
 namespace raytracer {
 	class Sphere;
@@ -16,7 +17,7 @@ private:
 	float radius_;
 public:
 	Sphere() : center_(DEFAULT_CENTER), radius_(DEFAULT_RADIUS) {}
-	Sphere(Vec3 center, float radius) : center_(center), radius_(radius) {}
+	Sphere(Vec3 center, float radius, int i) : center_(center), radius_(radius) { id = i; }
 
 	Vec3 getCenter() const { return center_; }
 	float getRadius() const { return radius_; }
@@ -25,6 +26,8 @@ public:
 
 	Vec3 getNormal(Vec3 const pt) const override;
 	inline bool hasIntersect(Ray ray, float& t) const override;
+	BoundingBox* createBoundingBox() const;
+	bool hasBoundingBox() const { return true; }
 
 	Sphere operator=(const Sphere& b) {
 		this->center_ = b.getCenter();
@@ -33,7 +36,16 @@ public:
 		return *this;
 	}
 };
+raytracer::BoundingBox* raytracer::Sphere::createBoundingBox() const {
+	Vec3 center = center_;
+	Vec3 radius = Vec3(radius_, radius_, radius_);
 
+	Vec3 min = center - radius;
+	Vec3 max = center + radius;
+
+	BoundingBox* boundingBox = new BoundingBox(min, max);
+	return boundingBox;
+}
 Vec3 raytracer::Sphere::getNormal(Vec3 const pt) const {
 	Vec3 normal = pt - center_;
 	normal.normalize();

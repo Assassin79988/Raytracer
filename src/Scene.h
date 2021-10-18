@@ -8,6 +8,7 @@
 #include "ImagePlane.h"
 #include "Ray.h"
 #include "PointLight.h"
+#include "BVH.h"
 
 #include <iostream>
 #include <vector>
@@ -21,6 +22,7 @@ namespace raytracer {
 
 class raytracer::Scene {
 private:
+	BVH* bvh;
 	Image image_ = Image(500, 500);
 	std::vector<Object*> objects_;
 	std::vector<LightSource*> lights_;
@@ -30,10 +32,12 @@ private:
 	uchar clamp(int color) const;
 	bool hasShadow(Ray ray, float lightDirLength) const;
 	Colour phong(Ray ray, Object* closestObj, Vec3 normal, float t) const;
-	Object* findClosestObject(Ray ray, float& t) const;
+	Object* findClosestObject(Ray ray, float& t, std::vector<Object*> objects) const;
 public:
 	Scene() {}
-	Scene(std::vector<Object*> objects, std::vector<LightSource*> lights) : objects_(objects), lights_(lights) {}
+	Scene(std::vector<Object*> objects, std::vector<LightSource*> lights) : objects_(objects), lights_(lights) {
+		bvh = new BVH(objects);
+	}
 
 	void renderScene();
 };
@@ -102,14 +106,14 @@ Colour raytracer::Scene::phong(Ray ray, Object* closestObj, Vec3 normal, float t
 }
 
 
-raytracer::Object* raytracer::Scene::findClosestObject(Ray ray, float& t) const {
+raytracer::Object* raytracer::Scene::findClosestObject(Ray ray, float& t, std::vector<Object*> objects) const {
 	float dist = 0.0f;
 	Object* closestObj = nullptr;
 
-	for (int i = 0; i < objects_.size(); ++i) {
-		bool hasIntersect = objects_[i]->hasIntersect(ray, dist);
+	for (int i = 0; i < objects.size(); ++i) {
+		bool hasIntersect = objects[i]->hasIntersect(ray, dist);
 		if (dist > 0 && dist < t && hasIntersect) {
-			closestObj = objects_[i];
+			closestObj = objects[i];
 			t = dist;
 		}
 	}
@@ -121,14 +125,20 @@ void raytracer::Scene::renderScene() {
 
 	for (int row = 0; row < image_.getRows(); ++row) {
 		for (int col = 0; col < image_.getCols(); ++col) {
-
+			//std::cout << row << "\t" << col << std::endl;
 			Ray ray = camera_.generateRay(imagePlane_.generatePixelPos(col, row));
 			float t = std::numeric_limits<float>::max();
-			Object* closestObj = findClosestObject(ray, t);
+			
+			std::vector<Object*> objects = bvh->getIntersectedObject(ray);
+			Object* closestObj = findClosestObject(ray, t, objects);
 			if (closestObj != nullptr) {
-				Vec3 normal = closestObj->getNormal(ray.compute(t));
-				Colour colour = phong(ray, closestObj, normal, t);
-				image_(row, col) = colour;
+				//if (closestObj->createBoundingBox()->hasIntersect(ray,t)) image_(row, col) = black();
+				//std::cout << "Min: " << closestObj->createBoundingBox()->getMin() << " Max: " << closestObj->createBoundingBox()->getMax() << std::endl;
+				if (closestObj->hasIntersect(ray, t)) {
+					Vec3 normal = closestObj->getNormal(ray.compute(t));
+					Colour colour = phong(ray, closestObj, normal, t);
+					image_(row, col) = colour;
+				}
 			}
 			else {
 				image_(row, col) = white();

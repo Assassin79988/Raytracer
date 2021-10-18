@@ -25,6 +25,10 @@ public:
 	/* Parameters there for polymorphism */
 	Vec3 getNormal(Vec3 const pt) const override { return getNormal(); }
 	inline bool hasIntersect(Ray ray, float& t) const override;
+	// infinte planes can't have a bounding box so I just return nullptr to check for plane 
+	// and i'll exclude them form my BVH.
+	virtual BoundingBox* createBoundingBox() const { return nullptr; }
+	bool hasBoundingBox() const { return false; }
 
 	Plane operator=(const Plane& b) {
 		this->point_ = b.getPoint();

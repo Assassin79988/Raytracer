@@ -25,7 +25,20 @@ public:
     Vec3 getNormal(Vec3 const pt) const { return normal_; }
 	inline bool hasIntersect(Ray ray, float& t) const;
     Vec3 baryCentric(const Vec3&) const;
+    BoundingBox* createBoundingBox() const;
+    bool hasBoundingBox() const { return true; }
 };
+
+raytracer::BoundingBox* raytracer::Triangle::createBoundingBox() const {
+    float xMax = fmax(vertex1_[0], fmax(vertex2_[0], vertex3_[0]));
+    float xMin = fmin(vertex1_[0], fmin(vertex2_[0], vertex3_[0]));
+    float yMax = fmax(vertex1_[1], fmax(vertex2_[1], vertex3_[1]));
+    float yMin = fmin(vertex1_[1], fmin(vertex2_[1], vertex3_[1]));
+    float zMax = fmax(vertex1_[2], fmax(vertex2_[2], vertex3_[2]));
+    float zMin = fmin(vertex1_[2], fmin(vertex2_[2], vertex3_[2]));
+    BoundingBox* boundingBox = new BoundingBox(Vec3(xMin, yMin, zMin), Vec3(xMax, yMax, zMax));
+    return boundingBox;
+}
 
 inline bool raytracer::Triangle::hasIntersect(Ray ray, float& t) const {
     bool hasIntersect;
