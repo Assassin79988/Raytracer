@@ -8,6 +8,7 @@
 #include "Mesh.h"
 #include "Material.h"
 #include "BVH.h"
+#include "box.h"
 #include <random>
 
 using namespace raytracer;
@@ -32,10 +33,10 @@ int main()
 	Material m1 = Material();
 	m1.setAmbientColor(black());
 	m1.setDiffuseColor(white());
-	//p1.setMaterial(m1);
-	Sphere s1 = Sphere(Vec3(4, 15, -30), 6.0, 1);
-	s1.setMaterial(m1);
-	Sphere s2 = Sphere(Vec3(-7, -7, -10), 1.0, 2);
+	p1.setMaterial(m1);
+	//Sphere s1 = Sphere(Vec3(4, 30, -30), 6.0);
+	//s1.setMaterial(m1);
+	Sphere s2 = Sphere(Vec3(3, 5, -12), 1.0);
 	std::vector<Object*> objects;
 	//objects.push_back(&s1);
 	//objects.push_back(&s2);
@@ -52,20 +53,22 @@ int main()
 	//Mesh test = Mesh("Carved pumpkin.obj", Vec3(0.0f,0.0f,-15.0f), 0.05f);
 	Mesh test2 = Mesh("bunny.obj", Vec3(0.0f, 10.0f, -20.0f), 100.0f);
 	//std::cout << "Here!" << std::endl;
-	Mesh test3 = Mesh("cube.obj", Vec3(-4.0f, 4.0f, -5.0f), 1.0f);
+	Mesh test3 = Mesh("cube.obj", Vec3(-4.0f, 5.0f, -8.0f), 1.0f);
 	//std::vector<Object*> objects;
 	std::vector<LightSource*> lights;
 	objects.push_back(&p1);
-	objects.push_back(&s1);
-	objects.push_back(&s2);
+	//objects.push_back(&s1);
+	//objects.push_back(&s2);
 	//test.getObjects(objects);
-	test2.getObjects(objects);
-	test3.getObjects(objects);
-	LightSource* lightSources_ = new PointLight(Vec3(0.0, -20.0, 0));
-	lights.push_back(lightSources_);
-	LightSource* lightSource2 = new PointLight(Vec3(10.0, 0.0, 0));
-	//lights.push_back(lightSource2);
-	LightSource* lightSource3 = new PointLight(Vec3(-5.0, 1.0, 3));
+	//test2.getObjects(objects);
+	//test3.getObjects(objects);
+	Box b1 = Box(Vec3(0,0,-8), Vec3(6,12,-12));
+	objects.push_back(&b1);
+	//LightSource* lightSources_ = new PointLight(Vec3(0.0, -20.0, 0));
+	//lights.push_back(lightSources_);
+	LightSource* lightSource2 = new PointLight(Vec3(0.0, 0.0, 0));
+	lights.push_back(lightSource2);
+	//LightSource* lightSource3 = new PointLight(Vec3(-5.0, 1.0, 3));
 	//lights.push_back(lightSource3);
 	Scene scene = Scene(objects, lights);
 	scene.renderScene();

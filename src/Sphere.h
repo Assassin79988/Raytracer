@@ -17,7 +17,7 @@ private:
 	float radius_;
 public:
 	Sphere() : center_(DEFAULT_CENTER), radius_(DEFAULT_RADIUS) {}
-	Sphere(Vec3 center, float radius, int i) : center_(center), radius_(radius) { id = i; }
+	Sphere(Vec3 center, float radius) : center_(center), radius_(radius) {}
 
 	Vec3 getCenter() const { return center_; }
 	float getRadius() const { return radius_; }

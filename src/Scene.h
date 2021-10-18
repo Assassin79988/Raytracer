@@ -161,7 +161,7 @@ void raytracer::Scene::renderScene() {
 				}
 			}
 			else {
-				image_(row, col) = white();
+				image_(row, col) = black();
 			}	
 			
 		}
