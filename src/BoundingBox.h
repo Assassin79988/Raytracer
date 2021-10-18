@@ -25,8 +25,8 @@ public:
 
 inline bool raytracer::BoundingBox::hasIntersect(Ray ray) const {
 	//bool hasIntersect = true;
-	float tMax = DBL_MAX;
-	float tMin = -DBL_MAX;
+	float tMax = FLT_MAX;
+	float tMin = -FLT_MAX;
 	for (int i = 0; i < 3; ++i) {
 		if (fabs(ray.getDirection()[i]) < 0.001) {
 			if (ray.getOrigin()[i] < min_[i] || ray.getOrigin()[i] > max_[i]) {

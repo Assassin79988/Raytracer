@@ -13,8 +13,6 @@
 #include <iostream>
 #include <vector>
 
-#define MAX(a,b) (a<b)?b:a
-
 namespace raytracer {
 	class Scene;
 	struct Objects;
@@ -66,8 +64,9 @@ uchar raytracer::Scene::clamp(int color) const {
 bool raytracer::Scene::hasShadow(Ray ray, float lightDirLength) const {
 	bool hasShadow = false;
 	float dist;
-	for (int i = 0; i < objects_.size(); ++i) {
-		bool hasIntersect = objects_[i]->hasIntersect(ray, dist);
+	std::vector<Object*> objects = bvh->getIntersectedObject(ray);
+	for (int i = 0; i < objects.size(); ++i) {
+		bool hasIntersect = objects[i]->hasIntersect(ray, dist);
 		if (dist > 0.0001 && dist < lightDirLength && hasIntersect) {
 			hasShadow = true;
 			break;
@@ -93,11 +92,11 @@ Colour raytracer::Scene::phong(Ray ray, Object* closestObj, Vec3 normal, float t
 		float specularTerm = 0.0f;
 		Ray lightRay = Ray(intersection, lightVector);
 		if (!hasShadow(lightRay, lightDirLength)) {
-			diffuseTerm = MAX(lightVector.dot(normal), 0);
+			diffuseTerm = fmax(lightVector.dot(normal), 0);
 
 			Vec3 relfectedLight = 2 * lightVector.dot(normal) * normal - lightVector;
 			relfectedLight.normalize();
-			specularTerm = pow(MAX(relfectedLight.dot(viewer), 0), m.getSpecularExp());
+			specularTerm = pow(fmax(relfectedLight.dot(viewer), 0), m.getSpecularExp());
 		}
 
 		Colour diffuseColour = m.getDiffuseColor();
@@ -145,25 +144,40 @@ raytracer::Object* raytracer::Scene::findClosestObject(Ray ray, float& t, std::v
 
 void raytracer::Scene::renderScene() {
 
+	int h_samples = 2;
+	int v_samples = 2;
 	for (int row = 0; row < image_.getRows(); ++row) {
 		for (int col = 0; col < image_.getCols(); ++col) {
-			//std::cout << row << "\t" << col << std::endl;
-			Ray ray = camera_.generateRay(imagePlane_.generatePixelPos(col, row));
-			float t = std::numeric_limits<float>::max();
-			
-			std::vector<Object*> objects = bvh->getIntersectedObject(ray);
-			Object* closestObj = findClosestObject(ray, t, objects);
-			if (closestObj != nullptr) {
-				if (closestObj->hasIntersect(ray, t)) {
-					Vec3 normal = closestObj->getNormal(ray.compute(t));
-					Colour colour = phong(ray, closestObj, normal, t);
-					image_(row, col) = colour;
+			float pixelColorX = 0.0;
+			float pixelColorY = 0.0;
+			float pixelColorZ = 0.0;
+			for (int p = 0; p < h_samples; ++p) {
+				for (int q = 0; q < v_samples; ++q) {
+					//std::cout << row << "\t" << col << std::endl;
+					//float shfit = rand() / (RAND_MAX + 1.0);
+					Ray ray = camera_.generateRay(imagePlane_.generatePixelPos(col + (q + 0.5f) / (float)v_samples, row + (p + 0.5f) / (float)h_samples));
+					float t = std::numeric_limits<float>::max();
+
+					std::vector<Object*> objects = bvh->getIntersectedObject(ray);
+					Object* closestObj = findClosestObject(ray, t, objects);
+					if (closestObj != nullptr) {
+						if (closestObj->hasIntersect(ray, t)) {
+							Vec3 normal = closestObj->getNormal(ray.compute(t));
+							Colour colour = phong(ray, closestObj, normal, t);
+							pixelColorX += colour[0];
+							pixelColorY += colour[1];
+							pixelColorZ += colour[2];
+						}
+					}
+					else {
+						Colour colour = black();
+						pixelColorX += colour[0];
+						pixelColorY += colour[1];
+						pixelColorZ += colour[2];
+					}
 				}
 			}
-			else {
-				image_(row, col) = black();
-			}	
-			
+			image_(row, col) = Colour(pixelColorX / (float)(v_samples * h_samples), pixelColorY / (float)(v_samples * h_samples), pixelColorZ / (float)(v_samples * h_samples));
 		}
 	}
 

@@ -47,8 +47,8 @@ Vec3 raytracer::Box::getNormal(Vec3 const pt) const {
 }
 
 inline bool raytracer::Box::hasIntersect(Ray ray, float& t) const {
-	float tMax = DBL_MAX;
-	float tMin = -DBL_MAX;
+	float tMax = FLT_MAX;
+	float tMin = -FLT_MAX;
 	for (int i = 0; i < 3; ++i) {
 		if (fabs(ray.getDirection()[i]) < 0.001) {
 			if (ray.getOrigin()[i] < llc_[i] || ray.getOrigin()[i] > urc_[i]) {
