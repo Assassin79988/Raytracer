@@ -25,6 +25,8 @@ private:
 	BVH* bvh;
 	Image image_ = Image(500, 500);
 	std::vector<Object*> objects_;
+	std::vector<Object*> noBoundingBoxobjects_;
+	std::vector<Object*> boundingBoxobjects_;
 	std::vector<LightSource*> lights_;
 	Camera camera_ = Camera(Vec3(0.0, 0.0, 0.0));
 	ImagePlane imagePlane_ = ImagePlane(image_.getCols(), image_.getRows(), Vec3(-1, -1, -1), Vec3(1, 1, -1));
@@ -35,12 +37,24 @@ private:
 	Object* findClosestObject(Ray ray, float& t, std::vector<Object*> objects) const;
 public:
 	Scene() {}
-	Scene(std::vector<Object*> objects, std::vector<LightSource*> lights) : objects_(objects), lights_(lights) {
-		bvh = new BVH(objects);
-	}
+	Scene(std::vector<Object*> objects, std::vector<LightSource*> lights);
 
 	void renderScene();
 };
+
+raytracer::Scene::Scene(std::vector<Object*> objects, std::vector<LightSource*> lights) : objects_(objects), lights_(lights) {
+	// Checks for any objects that don't have a bounding box i.e. infinte planes
+	for (int i = 0; i < objects_.size(); ++i) {
+		if (!objects_[i]->hasBoundingBox()) {
+			noBoundingBoxobjects_.push_back(objects_[i]);
+		}
+		else {
+			boundingBoxobjects_.push_back(objects_[i]);
+		}
+	}
+	
+	bvh = new BVH(boundingBoxobjects_);
+}
 
 uchar raytracer::Scene::clamp(int color) const {
 	if (color < 0) return 0;
@@ -118,6 +132,14 @@ raytracer::Object* raytracer::Scene::findClosestObject(Ray ray, float& t, std::v
 		}
 	}
 
+	for (int i = 0; i < noBoundingBoxobjects_.size(); ++i) {
+		bool hasIntersect = noBoundingBoxobjects_[i]->hasIntersect(ray, dist);
+		if (dist > 0 && dist < t && hasIntersect) {
+			closestObj = noBoundingBoxobjects_[i];
+			t = dist;
+		}
+	}
+
 	return closestObj;
 }
 
@@ -132,8 +154,6 @@ void raytracer::Scene::renderScene() {
 			std::vector<Object*> objects = bvh->getIntersectedObject(ray);
 			Object* closestObj = findClosestObject(ray, t, objects);
 			if (closestObj != nullptr) {
-				//if (closestObj->createBoundingBox()->hasIntersect(ray,t)) image_(row, col) = black();
-				//std::cout << "Min: " << closestObj->createBoundingBox()->getMin() << " Max: " << closestObj->createBoundingBox()->getMax() << std::endl;
 				if (closestObj->hasIntersect(ray, t)) {
 					Vec3 normal = closestObj->getNormal(ray.compute(t));
 					Colour colour = phong(ray, closestObj, normal, t);
