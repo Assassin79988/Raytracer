@@ -63,7 +63,7 @@ uchar raytracer::Scene::clamp(int color) const {
 
 bool raytracer::Scene::hasShadow(Ray ray, float lightDirLength) const {
 	bool hasShadow = false;
-	float dist;
+	float dist = 0.0;
 	std::vector<Object*> objects = bvh->getIntersectedObject(ray);
 	for (int i = 0; i < objects.size(); ++i) {
 		bool hasIntersect = objects[i]->hasIntersect(ray, dist);
@@ -72,6 +72,15 @@ bool raytracer::Scene::hasShadow(Ray ray, float lightDirLength) const {
 			break;
 		}
 	}
+
+	for (int i = 0; i < noBoundingBoxobjects_.size(); ++i) {
+		bool hasIntersect = noBoundingBoxobjects_[i]->hasIntersect(ray, dist);
+		if (dist > 0.0001 && dist < lightDirLength && hasIntersect) {
+			hasShadow = true;
+			break;
+		}
+	}
+
 	return hasShadow;
 }
 

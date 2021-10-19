@@ -36,7 +36,7 @@ int main()
 	p1.setMaterial(m1);
 	//Sphere s1 = Sphere(Vec3(4, 30, -30), 6.0);
 	//s1.setMaterial(m1);
-	Sphere s2 = Sphere(Vec3(0, 0, -12), 5.0);
+	Sphere s2 = Sphere(Vec3(0, 5, -12), 1.0);
 	std::vector<Object*> objects;
 	//objects.push_back(&s1);
 	//objects.push_back(&s2);
@@ -51,27 +51,27 @@ int main()
 
 
 	//Mesh test = Mesh("Carved pumpkin.obj", Vec3(0.0f,0.0f,-15.0f), 0.05f);
-	Mesh test2 = Mesh("bunny.obj", Vec3(0.0f, 10.0f, -20.0f), 100.0f);
+	Mesh test2 = Mesh("Bunny.obj", Vec3(0.0f, 10.0f, -20.0f), 100.0f);
+	//Mesh test2 = Mesh("alfa147.obj", Vec3(0.0f, 0.0f, -20.0f), 0.1f);
 	//std::cout << "Here!" << std::endl;
-	Mesh test3 = Mesh("cube.obj", Vec3(-4.0f, 5.0f, -8.0f), 1.0f);
+	Mesh test3 = Mesh("tsph.obj", Vec3(0.0f, 0.0f, -8.0f), 1.0f);
 	//std::vector<Object*> objects;
 	std::vector<LightSource*> lights;
 	objects.push_back(&p1);
-	//objects.push_back(&s1);
+	//objects.push_back(&s2);
 	//objects.push_back(&s2);
 	//test.getObjects(objects);
 	test2.getObjects(objects);
-	std::cout << objects.size() << std::endl;
+	//std::cout << objects.size() << std::endl;
 	//test3.getObjects(objects);
-	//Box b1 = Box(Vec3(100, 100, -30), Vec3(-100, -100, -30));
-	//b1.setMaterial(m1);
+	//Box b1 = Box(Vec3(1, 2, -5), Vec3(-1, -10,-15));
 	//objects.push_back(&b1);
 	//objects.push_back(&b2);
 	LightSource* lightSources_ = new PointLight(Vec3(0.0, -20.0, 0));
 	lights.push_back(lightSources_);
 	LightSource* lightSource2 = new PointLight(Vec3(0.0, 0.0, 0));
 	lights.push_back(lightSource2);
-	LightSource* lightSource3 = new PointLight(Vec3(-5.0, 1.0, 3));
+	LightSource* lightSource3 = new PointLight(Vec3(5.0, 3.0, 3));
 	lights.push_back(lightSource3);
 	Scene scene = Scene(objects, lights);
 	scene.renderScene();

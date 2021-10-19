@@ -58,6 +58,11 @@ bool raytracer::Mesh::objectFileParser() {
 		return false;
 	}
 
+	bool hasNormal = false;
+	bool hasNormalIndex = false;
+	bool hasUV = false;
+	bool hasUVIndex = false;
+
 	while (true) {
 		char lineHeader[128];
 
@@ -81,11 +86,13 @@ bool raytracer::Mesh::objectFileParser() {
 			float uvx, uvy;
 			fscanf(file, "%f %f\n", &uvx, &uvy);
 			uvs_.push_back(Vec2(uvx, uvy));
+			hasUV = true;
 		}
 		else if (strcmp(lineHeader, "vn") == 0) {
 			float nx, ny, nz;
 			fscanf(file, "%f %f %f\n", &nx, &ny, &nz);
 			normals_.push_back(Vec3(nx, ny, nz));
+			hasNormal = true;
 		}
 		else if (strcmp(lineHeader, "f") == 0) {
 			unsigned int vertexIndex[3], uvIndex[3], normalIndex[3];
@@ -98,10 +105,12 @@ bool raytracer::Mesh::objectFileParser() {
 				f.vertexIndex[1] = vertexIndex[1];
 				f.vertexIndex[2] = vertexIndex[2];
 
+				hasNormalIndex = true;
 				f.normalIndex[0] = normalIndex[0];
 				f.normalIndex[1] = normalIndex[1];
 				f.normalIndex[2] = normalIndex[2];
 
+				hasUVIndex = true;
 				f.uvIndex[0] = uvIndex[0];
 				f.uvIndex[1] = uvIndex[1];
 				f.uvIndex[2] = uvIndex[2];
@@ -113,6 +122,7 @@ bool raytracer::Mesh::objectFileParser() {
 					f.vertexIndex[1] = vertexIndex[1];
 					f.vertexIndex[2] = vertexIndex[2];
 
+					hasNormalIndex = true;
 					f.normalIndex[0] = normalIndex[0];
 					f.normalIndex[1] = normalIndex[1];
 					f.normalIndex[2] = normalIndex[2];
@@ -124,6 +134,7 @@ bool raytracer::Mesh::objectFileParser() {
 						f.vertexIndex[1] = vertexIndex[1];
 						f.vertexIndex[2] = vertexIndex[2];
 
+						hasUVIndex = true;
 						f.uvIndex[0] = uvIndex[0];
 						f.uvIndex[1] = uvIndex[1];
 						f.uvIndex[2] = uvIndex[2];
@@ -151,8 +162,85 @@ bool raytracer::Mesh::objectFileParser() {
 		Vec3 v1 = vertices_[faces_[i].vertexIndex[0] - 1];
 		Vec3 v2 = vertices_[faces_[i].vertexIndex[1] - 1];
 		Vec3 v3 = vertices_[faces_[i].vertexIndex[2] - 1];
-		triangles_.push_back(Triangle(v1, v2, v3));
+		if (!hasNormal || !hasNormalIndex) {
+			triangles_.push_back(Triangle(v1, v2, v3));
+		}
+		else {
+			Vec3 vn1 = normals_[faces_[i].normalIndex[0] - 1];
+			Vec3 vn2 = normals_[faces_[i].normalIndex[1] - 1];
+			Vec3 vn3 = normals_[faces_[i].normalIndex[2] - 1];
+			triangles_.push_back(Triangle(v1, v2, v3, vn1, vn2, vn3));
+		}
 	}
+	
+	int v1C = 0;
+	int v2C = 0;
+	int v3C = 0;
+
+	if (!hasNormal || !hasNormalIndex) {
+		for (int v = 0; v < vertices_.size(); ++v) {
+			std::vector<int*> data;
+			float avgNormalX = 0.0;
+			float avgNormalY = 0.0;
+			float avgNormalZ = 0.0;
+			for (int t = 0; t < triangles_.size(); ++t) {
+				if (v == (faces_[t].vertexIndex[0] - 1)) {
+					int* d = new int[2];
+					d[0] = t;
+					d[1] = 0;
+					data.push_back(d);
+					Vec3 faceNormal = triangles_[t].getFaceNormal();
+					avgNormalX += faceNormal[0];
+					avgNormalY += faceNormal[1];
+					avgNormalZ += faceNormal[2];
+
+				}
+				else if (v == (faces_[t].vertexIndex[1] - 1)) {
+					int* d = new int[2];
+					d[0] = t;
+					d[1] = 1;
+					data.push_back(d);
+					Vec3 faceNormal = triangles_[t].getFaceNormal();
+					avgNormalX += faceNormal[0];
+					avgNormalY += faceNormal[1];
+					avgNormalZ += faceNormal[2];
+				}
+				else if (v == (faces_[t].vertexIndex[2] - 1)) {
+					int* d = new int[2];
+					d[0] = t;
+					d[1] = 2;
+					data.push_back(d);
+					Vec3 faceNormal = triangles_[t].getFaceNormal();
+					avgNormalX += faceNormal[0];
+					avgNormalY += faceNormal[1];
+					avgNormalZ += faceNormal[2];
+				}
+			}
+
+			Vec3 avgNormal = Vec3(avgNormalX, avgNormalY, avgNormalZ);
+			avgNormal.normalize();
+			//d::cout << avgNormal << std::endl;
+			for (int i = 0; i < data.size(); ++i) {
+				if (data[i][1] == 0) {
+					v1C++;
+					triangles_[data[i][0]].setVn1(avgNormal);
+					free(data[i]);
+				}
+				else if (data[i][1] == 1) {
+					v2C++;
+					triangles_[data[i][0]].setVn2(avgNormal);
+					free(data[i]);
+				}
+				else if (data[i][1] == 2) {
+					v3C++;
+					triangles_[data[i][0]].setVn3(avgNormal);
+					free(data[i]);
+				}
+			}
+
+		}
+	}
+	
 	return true;
 }
 

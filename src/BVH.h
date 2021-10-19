@@ -8,9 +8,6 @@
 #include <algorithm>
 #include <random>
 
-#define MAX(a,b) (a<b)?b:a
-#define MIN(a,b) (a>b)?b:a
-
 namespace raytracer {
 	class BVH;
 	struct Node;
@@ -146,8 +143,8 @@ raytracer::Node* raytracer::BVH::bulidBVH(std::vector<Object*> objects) {
 raytracer::BoundingBox* raytracer::BVH::mergeBoundingBox(BoundingBox* boxOne, BoundingBox* boxTwo) {
 	
 
-	Vec3 min = Vec3(MIN(boxOne->getMin()[0], boxTwo->getMin()[0]), MIN(boxOne->getMin()[1], boxTwo->getMin()[1]), MIN(boxOne->getMin()[2], boxTwo->getMin()[2]));
-	Vec3 max = Vec3(MAX(boxOne->getMax()[0], boxTwo->getMax()[0]), MAX(boxOne->getMax()[1], boxTwo->getMax()[1]), MAX(boxOne->getMax()[2], boxTwo->getMax()[2]));
+	Vec3 min = Vec3(fmin(boxOne->getMin()[0], boxTwo->getMin()[0]), fmin(boxOne->getMin()[1], boxTwo->getMin()[1]), fmin(boxOne->getMin()[2], boxTwo->getMin()[2]));
+	Vec3 max = Vec3(fmax(boxOne->getMax()[0], boxTwo->getMax()[0]), fmax(boxOne->getMax()[1], boxTwo->getMax()[1]), fmax(boxOne->getMax()[2], boxTwo->getMax()[2]));
 
 	BoundingBox* boundingBox = new BoundingBox(min, max);
 
