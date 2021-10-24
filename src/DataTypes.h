@@ -6,8 +6,11 @@
 #include "opencv2/core/core.hpp"   
 
 typedef float Scalar;
+typedef Eigen::Matrix<Scalar, 4, 1> Vec4;
 typedef Eigen::Matrix<Scalar, 3, 1> Vec3;
 typedef Eigen::Matrix<Scalar, 2, 1> Vec2;
+typedef Eigen::Matrix<Scalar, 3, 3> Mat3;
+typedef Eigen::Matrix<Scalar, 4, 4> Mat4;
 typedef	unsigned char uchar;
 
 using Colour = cv::Vec3b; // RGB Value

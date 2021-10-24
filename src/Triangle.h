@@ -22,9 +22,9 @@ public:
 	Triangle() {}
 	Triangle(Vec3 v1, Vec3 v2, Vec3 v3) : vertex1_(v1), vertex2_(v2), vertex3_(v3) {
         faceNormal_ = computeNormal(v1, v2, v3);
-        //vn1_ = faceNormal_;
-        //vn2_ = faceNormal_;
-        //vn3_ = faceNormal_;
+        vn1_ = faceNormal_;
+        vn2_ = faceNormal_;
+        vn3_ = faceNormal_;
 	};
 
     Triangle(Vec3 v1, Vec3 v2, Vec3 v3, Vec3 vn1, Vec3 vn2, Vec3 vn3) : vertex1_(v1), vertex2_(v2), vertex3_(v3), vn1_(vn1), vn2_(vn2), vn3_(vn3) {

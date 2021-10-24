@@ -4,6 +4,8 @@
 #include "DataTypes.h"
 #include "Ray.h"
 #include "Material.h"
+#include "Metal.h"
+#include "Dieletric.h"
 #include "BoundingBox.h"
 #include <math.h>
 #include <iostream>
@@ -14,11 +16,11 @@ namespace raytracer {
 
 class raytracer::Object {
 private:
-	Material material_ = Material();
+	Material* material_ = new Dieletric();
 public:
 	int id;
-	virtual Material getMaterial() { return material_; };
-	virtual void setMaterial(Material material) { material_ = material; }
+	virtual Material* getMaterial() { return material_; };
+	virtual void setMaterial(Material* material) { material_ = material; }
 
 	virtual Vec3 getNormal(Vec3 const pt) const = 0;
 	inline virtual bool hasIntersect(Ray ray, float& t) const = 0;

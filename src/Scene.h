@@ -31,8 +31,10 @@ private:
 
 	uchar clamp(int color) const;
 	bool hasShadow(Ray ray, float lightDirLength) const;
-	Colour phong(Ray ray, Object* closestObj, Vec3 normal, float t) const;
-	Object* findClosestObject(Ray ray, float& t, std::vector<Object*> objects) const;
+	Colour reflections(Ray ray, int depth) const;
+	Colour phong(Ray ray, Object* closestObj, Vec3 normal, int depth, float t) const;
+	Colour blinnPhong(Ray ray, Object* closestObj, Vec3 normal, float t) const;
+	Object* findClosestObject(Ray ray, std::vector<Object*> objects) const;
 public:
 	Scene() {}
 	Scene(std::vector<Object*> objects, std::vector<LightSource*> lights);
@@ -84,10 +86,43 @@ bool raytracer::Scene::hasShadow(Ray ray, float lightDirLength) const {
 	return hasShadow;
 }
 
-Colour raytracer::Scene::phong(Ray ray, Object* closestObj, Vec3 normal, float t) const {
-	Material m = closestObj->getMaterial();
+Colour raytracer::Scene::reflections(Ray ray, int depth) const{
+	float t;
+	Colour colour = black();
+	std::vector<Object*> objects = bvh->getIntersectedObject(ray);
+	Object* closestObj = findClosestObject(ray, objects);
+	if (closestObj != nullptr) {
+		if (closestObj->hasIntersect(ray, t)) {
+			Vec3 normal = closestObj->getNormal(ray.compute(t));
+			colour = phong(ray, closestObj, normal, depth, t);
+		}
+	}
+	return colour;
+}
+
+Colour raytracer::Scene::phong(Ray ray, Object* closestObj, Vec3 normal, int depth, float t) const {
+	Material* m = closestObj->getMaterial();
 	Vec3 intersection = ray.compute(t);
 	Vec3 diffuseAndSpecColour = Vec3(0.0, 0.0, 0.0);
+	Colour reflectionColour = Colour(0.0, 0.0, 0.0);
+
+	if (depth > 1) {
+		if (m->getReflection() > 0.0f) {
+			Vec3 viewer = ray.getDirection();//ray.getOrigin() - intersection;
+			normal.normalize();
+			viewer.normalize();
+			Ray reflectedRay;
+			if (m->getReflectedRay(ray.getDirection(), intersection, normal, reflectedRay)) {//-2 * (viewer.dot(normal)) * (normal) + viewer;
+				reflectionColour += reflections(reflectedRay, depth - 1);
+				reflectionColour *= m->getReflection();
+			}
+		}
+
+		if (m->getRefraction() > 0.0f) {
+
+		}
+	}
+
 	for (int i = 0; i < lights_.size(); ++i) {
 		Vec3 lightVector = lights_[i]->computeLightVector(intersection);
 		Vec3 viewer = ray.getOrigin() - intersection;
@@ -96,7 +131,6 @@ Colour raytracer::Scene::phong(Ray ray, Object* closestObj, Vec3 normal, float t
 		lightVector.normalize();
 		normal.normalize();
 		viewer.normalize();
-
 		float diffuseTerm = 0.0f;
 		float specularTerm = 0.0f;
 		Ray lightRay = Ray(intersection, lightVector);
@@ -105,13 +139,13 @@ Colour raytracer::Scene::phong(Ray ray, Object* closestObj, Vec3 normal, float t
 
 			Vec3 relfectedLight = 2 * lightVector.dot(normal) * normal - lightVector;
 			relfectedLight.normalize();
-			specularTerm = pow(fmax(relfectedLight.dot(viewer), 0), m.getSpecularExp());
+			specularTerm = pow(fmax(relfectedLight.dot(viewer), 0), m->getSpecularExp());
 		}
 
-		Colour diffuseColour = m.getDiffuseColor();
-		Colour specularColor = m.getSpecularColor();
-		float kd = m.getKd();
-		float ks = m.getKs();
+		Colour diffuseColour = m->getDiffuseColor();
+		Colour specularColor = m->getSpecularColor();
+		float kd = m->getKd();
+		float ks = m->getKs();
 
 		diffuseAndSpecColour[0] += kd * diffuseColour[0] * diffuseTerm + ks * specularColor[0] * specularTerm;
 		diffuseAndSpecColour[1] += kd * diffuseColour[1] * diffuseTerm + ks * specularColor[1] * specularTerm;
@@ -119,22 +153,27 @@ Colour raytracer::Scene::phong(Ray ray, Object* closestObj, Vec3 normal, float t
 	}
 
 	Colour colour(0, 0, 0);
-	float ka = m.getKa();
-	Colour ambientColour = m.getAmbientColor();
-	colour[0] = clamp(ka * ambientColour[0] + diffuseAndSpecColour[0] / (float)lights_.size());
-	colour[1] = clamp(ka * ambientColour[1] + diffuseAndSpecColour[1] / (float)lights_.size());
-	colour[2] = clamp(ka * ambientColour[2] + diffuseAndSpecColour[2] / (float)lights_.size());
+	float ka = m->getKa();
+	Colour ambientColour = m->getAmbientColor();
+	colour[0] = clamp(ka * ambientColour[0] + diffuseAndSpecColour[0] / (float)lights_.size() + reflectionColour[0]);
+	colour[1] = clamp(ka * ambientColour[1] + diffuseAndSpecColour[1] / (float)lights_.size() + reflectionColour[1]);
+	colour[2] = clamp(ka * ambientColour[2] + diffuseAndSpecColour[2] / (float)lights_.size() + reflectionColour[2]);
 	return colour;
 }
 
+Colour raytracer::Scene::blinnPhong(Ray ray, Object* closestObj, Vec3 normal, float t) const {
 
-raytracer::Object* raytracer::Scene::findClosestObject(Ray ray, float& t, std::vector<Object*> objects) const {
+	return black();
+}
+
+raytracer::Object* raytracer::Scene::findClosestObject(Ray ray, std::vector<Object*> objects) const {
 	float dist = 0.0f;
+	float t = std::numeric_limits<float>::max();
 	Object* closestObj = nullptr;
 
 	for (int i = 0; i < objects.size(); ++i) {
 		bool hasIntersect = objects[i]->hasIntersect(ray, dist);
-		if (dist > 0 && dist < t && hasIntersect) {
+		if (dist > 0 && dist < MAX_DIST && dist < t && hasIntersect) {
 			closestObj = objects[i];
 			t = dist;
 		}
@@ -142,7 +181,7 @@ raytracer::Object* raytracer::Scene::findClosestObject(Ray ray, float& t, std::v
 
 	for (int i = 0; i < noBoundingBoxobjects_.size(); ++i) {
 		bool hasIntersect = noBoundingBoxobjects_[i]->hasIntersect(ray, dist);
-		if (dist > 0 && dist < t && hasIntersect) {
+		if (dist > 0 && dist < MAX_DIST && dist < t && hasIntersect) {
 			closestObj = noBoundingBoxobjects_[i];
 			t = dist;
 		}
@@ -166,13 +205,13 @@ void raytracer::Scene::renderScene() {
 					//float shfit = rand() / (RAND_MAX + 1.0);
 					Ray ray = camera_.generateRay(imagePlane_.generatePixelPos(col + (q + 0.5f) / (float)v_samples, row + (p + 0.5f) / (float)h_samples));
 					float t = std::numeric_limits<float>::max();
-
 					std::vector<Object*> objects = bvh->getIntersectedObject(ray);
-					Object* closestObj = findClosestObject(ray, t, objects);
+					Object* closestObj = findClosestObject(ray, objects);
+
 					if (closestObj != nullptr) {
 						if (closestObj->hasIntersect(ray, t)) {
 							Vec3 normal = closestObj->getNormal(ray.compute(t));
-							Colour colour = phong(ray, closestObj, normal, t);
+							Colour colour = phong(ray, closestObj, normal, DEPTH, t);
 							pixelColorX += colour[0];
 							pixelColorY += colour[1];
 							pixelColorZ += colour[2];

@@ -27,22 +27,55 @@ private:
 	std::vector<Face> faces_;
 	std::vector<Triangle> triangles_;
 
-	Vec3 position_;
-	Vec3 rotation_;
-	float scale_;
+	Mat4 affineTransform_;
 
 	bool objectFileParser();
+	void getAffineTransform(Vec3 position, Vec3 rotation, Vec3 scale);
 public:
 	Mesh() {
 		objectFileParser();
 	}
-	Mesh(char* path, Vec3 position, float scale ) : position_(position), scale_(scale){
+	Mesh(char* path, Vec3 position, Vec3 rotation, Vec3 scale) {
 		path_ = path;
+		getAffineTransform(position, rotation, scale);
 		objectFileParser(); 
 	}
 
 	void getObjects(std::vector<Object*> &objects);
 };
+
+void raytracer::Mesh::getAffineTransform(Vec3 position, Vec3 rotation, Vec3 scale) {
+	Mat4 translationMatrix = Mat4::Identity();
+	translationMatrix(0, 3) = position[0];
+	translationMatrix(1, 3) = position[1];
+	translationMatrix(2, 3) = position[2];
+
+	Mat4 scaleMatrix = Mat4::Identity();
+	scaleMatrix(0, 0) = scale[0];
+	scaleMatrix(1, 1) = -scale[1];
+	scaleMatrix(2, 2) = scale[2];
+
+	Mat4 xRotMatrix = Mat4::Identity();
+	xRotMatrix(1, 1) = cos(rotation[0]);
+	xRotMatrix(2, 1) = sin(rotation[0]);
+	xRotMatrix(1, 2) = -sin(rotation[0]);
+	xRotMatrix(2, 2) = cos(rotation[0]);
+
+	Mat4 yRotMatrix = Mat4::Identity();
+	yRotMatrix(0, 0) = cos(rotation[1]);
+	yRotMatrix(0, 2) = sin(rotation[1]);
+	yRotMatrix(2, 0) = -sin(rotation[1]);
+	yRotMatrix(2, 2) = cos(rotation[1]);
+
+	Mat4 zRotMatrix = Mat4::Identity();
+	zRotMatrix(0, 0) = cos(rotation[2]);
+	zRotMatrix(0, 1) = -sin(rotation[2]);
+	zRotMatrix(1, 0) = sin(rotation[2]);
+	zRotMatrix(1, 1) = cos(rotation[2]);
+
+	//TODO: Add shear matrix.
+	affineTransform_ = translationMatrix * scaleMatrix * xRotMatrix * yRotMatrix * zRotMatrix;
+}
 
 void raytracer::Mesh::getObjects(std::vector<Object*>& objects) {
 	for (int i = 0; i < triangles_.size(); ++i) {
@@ -74,13 +107,10 @@ bool raytracer::Mesh::objectFileParser() {
 		else if (strcmp(lineHeader, "v") == 0) {
 			float vx, vy, vz;
 			fscanf(file, "%f %f %f\n", &vx, &vy, &vz);
-			vz *= scale_;
-			vy *= -scale_;
-			vx *= scale_;
-			vz += position_[2];
-			vy += position_[1];
-			vx += position_[0];
-			vertices_.push_back(Vec3(vx, vy, vz));
+			Vec4 temp = Vec4(vx, vy, vz, 1);
+			temp = affineTransform_ * temp;
+			//std::cout << temp << std::endl << std::endl;
+			vertices_.push_back(Vec3(temp[0], temp[1], temp[2]));
 		}
 		else if (strcmp(lineHeader, "vt") == 0) {
 			float uvx, uvy;
