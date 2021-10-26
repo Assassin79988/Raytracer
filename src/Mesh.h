@@ -106,7 +106,7 @@ bool raytracer::Mesh::objectFileParser() {
 		}
 		else if (strcmp(lineHeader, "v") == 0) {
 			float vx, vy, vz;
-			fscanf(file, "%f %f %f\n", &vx, &vy, &vz);
+			(void) fscanf(file, "%f %f %f\n", &vx, &vy, &vz);
 			Vec4 temp = Vec4(vx, vy, vz, 1);
 			temp = affineTransform_ * temp;
 			//std::cout << temp << std::endl << std::endl;
@@ -114,23 +114,28 @@ bool raytracer::Mesh::objectFileParser() {
 		}
 		else if (strcmp(lineHeader, "vt") == 0) {
 			float uvx, uvy;
-			fscanf(file, "%f %f\n", &uvx, &uvy);
+			(void) fscanf(file, "%f %f\n", &uvx, &uvy);
 			uvs_.push_back(Vec2(uvx, uvy));
 			hasUV = true;
 		}
 		else if (strcmp(lineHeader, "vn") == 0) {
 			float nx, ny, nz;
-			fscanf(file, "%f %f %f\n", &nx, &ny, &nz);
+			(void) fscanf(file, "%f %f %f\n", &nx, &ny, &nz);
 			normals_.push_back(Vec3(nx, ny, nz));
 			hasNormal = true;
 		}
 		else if (strcmp(lineHeader, "f") == 0) {
-			unsigned int vertexIndex[3], uvIndex[3], normalIndex[3];
+			unsigned int vertexIndex[4], uvIndex[4], normalIndex[4];
+			bool supportedFormat = false;
+			bool isQuad = false;
 			Face f;
+			Face f2;
 			char line[128];
 			fgets(line, 128, file);
-			int matches = sscanf(line, "%d/%d/%d %d/%d/%d %d/%d/%d", &vertexIndex[0], &uvIndex[0], &normalIndex[0], &vertexIndex[1], &uvIndex[1], &normalIndex[1], &vertexIndex[2], &uvIndex[2], &normalIndex[2]);
+			int matches = sscanf(line, "%d/%d/%d %d/%d/%d %d/%d/%d %d/%d/%d", &vertexIndex[0], &uvIndex[0], &normalIndex[0], &vertexIndex[1], &uvIndex[1], &normalIndex[1], &vertexIndex[2], &uvIndex[2], &normalIndex[2], &vertexIndex[3], &uvIndex[3], &normalIndex[3]);
 			if (matches == 9) {
+				supportedFormat = true;
+				
 				f.vertexIndex[0] = vertexIndex[0];
 				f.vertexIndex[1] = vertexIndex[1];
 				f.vertexIndex[2] = vertexIndex[2];
@@ -145,9 +150,41 @@ bool raytracer::Mesh::objectFileParser() {
 				f.uvIndex[1] = uvIndex[1];
 				f.uvIndex[2] = uvIndex[2];
 			}
+			else if (matches == 12) {
+				supportedFormat = true;
+				isQuad = true;
+
+				f.vertexIndex[0] = vertexIndex[0];
+				f.vertexIndex[1] = vertexIndex[1];
+				f.vertexIndex[2] = vertexIndex[2];
+
+				f2.vertexIndex[0] = vertexIndex[0];
+				f2.vertexIndex[1] = vertexIndex[2];
+				f2.vertexIndex[2] = vertexIndex[3];
+
+				hasUVIndex = true;
+				f.uvIndex[0] = uvIndex[0];
+				f.uvIndex[1] = uvIndex[1];
+				f.uvIndex[2] = uvIndex[2];
+
+				f2.uvIndex[0] = uvIndex[0];
+				f2.uvIndex[1] = uvIndex[2];
+				f2.uvIndex[2] = uvIndex[3];
+
+				hasNormalIndex = true;
+				f.normalIndex[0] = normalIndex[0];
+				f.normalIndex[1] = normalIndex[1];
+				f.normalIndex[2] = normalIndex[2];
+
+				f2.normalIndex[0] = normalIndex[0];
+				f2.normalIndex[1] = normalIndex[2];
+				f2.normalIndex[2] = normalIndex[3];
+			}
 			else {
-				matches = sscanf(line, "%d//%d %d//%d %d//%d", &vertexIndex[0], &normalIndex[0], &vertexIndex[1], &normalIndex[1], &vertexIndex[2], &normalIndex[2]);
+				matches = sscanf(line, "%d//%d %d//%d %d//%d %d//%d", &vertexIndex[0], &normalIndex[0], &vertexIndex[1], &normalIndex[1], &vertexIndex[2], &normalIndex[2], &vertexIndex[3], &normalIndex[3]);
 				if (matches == 6) {
+					supportedFormat = true;
+					
 					f.vertexIndex[0] = vertexIndex[0];
 					f.vertexIndex[1] = vertexIndex[1];
 					f.vertexIndex[2] = vertexIndex[2];
@@ -157,9 +194,32 @@ bool raytracer::Mesh::objectFileParser() {
 					f.normalIndex[1] = normalIndex[1];
 					f.normalIndex[2] = normalIndex[2];
 				}
+				else if (matches == 8) {
+					supportedFormat = true;
+					isQuad = true;
+
+					f.vertexIndex[0] = vertexIndex[0];
+					f.vertexIndex[1] = vertexIndex[1];
+					f.vertexIndex[2] = vertexIndex[2];
+
+					f2.vertexIndex[0] = vertexIndex[0];
+					f2.vertexIndex[1] = vertexIndex[2];
+					f2.vertexIndex[2] = vertexIndex[3];
+
+					hasNormalIndex = true;
+					f.normalIndex[0] = normalIndex[0];
+					f.normalIndex[1] = normalIndex[1];
+					f.normalIndex[2] = normalIndex[2];
+
+					f2.normalIndex[0] = normalIndex[0];
+					f2.normalIndex[1] = normalIndex[2];
+					f2.normalIndex[2] = normalIndex[3];
+				}
 				else {
-					matches = sscanf(line, "%d/%d %d/%d %d/%d", &vertexIndex[0], &uvIndex[0], &vertexIndex[1], &uvIndex[1], &vertexIndex[2], &uvIndex[2]);
+					matches = sscanf(line, "%d/%d %d/%d %d/%d %d/%d", &vertexIndex[0], &uvIndex[0], &vertexIndex[1], &uvIndex[1], &vertexIndex[2], &uvIndex[2], &vertexIndex[3], &uvIndex[3]);
 					if (matches == 6) {
+						supportedFormat = true;
+						
 						f.vertexIndex[0] = vertexIndex[0];
 						f.vertexIndex[1] = vertexIndex[1];
 						f.vertexIndex[2] = vertexIndex[2];
@@ -169,26 +229,68 @@ bool raytracer::Mesh::objectFileParser() {
 						f.uvIndex[1] = uvIndex[1];
 						f.uvIndex[2] = uvIndex[2];
 					}
-					else {
-						unsigned int vertexIndex[3];
-						matches = sscanf(line, "%d %d %d", &vertexIndex[0], &vertexIndex[1], &vertexIndex[2]);
+					else if (matches == 8) {
+						supportedFormat = true;
+						isQuad = true;
+
 						f.vertexIndex[0] = vertexIndex[0];
 						f.vertexIndex[1] = vertexIndex[1];
 						f.vertexIndex[2] = vertexIndex[2];
+
+						f2.vertexIndex[0] = vertexIndex[0];
+						f2.vertexIndex[1] = vertexIndex[2];
+						f2.vertexIndex[2] = vertexIndex[3];
+
+						hasUVIndex = true;
+						f.uvIndex[0] = uvIndex[0];
+						f.uvIndex[1] = uvIndex[1];
+						f.uvIndex[2] = uvIndex[2];
+
+						f2.uvIndex[0] = uvIndex[0];
+						f2.uvIndex[1] = uvIndex[2];
+						f2.uvIndex[2] = uvIndex[3];
+					}
+					else {
+						matches = sscanf(line, "%d %d %d %d", &vertexIndex[0], &vertexIndex[1], &vertexIndex[2], &vertexIndex[3]);
+						if (matches == 3) {
+							supportedFormat = true;
+							f.vertexIndex[0] = vertexIndex[0];
+							f.vertexIndex[1] = vertexIndex[1];
+							f.vertexIndex[2] = vertexIndex[2];
+						}
+						else if (matches == 4) {
+							supportedFormat = true;
+							isQuad = true;
+
+							f.vertexIndex[0] = vertexIndex[0];
+							f.vertexIndex[1] = vertexIndex[1];
+							f.vertexIndex[2] = vertexIndex[2];
+
+							f2.vertexIndex[0] = vertexIndex[0];
+							f2.vertexIndex[1] = vertexIndex[2];
+							f2.vertexIndex[2] = vertexIndex[3];
+						}
 					}
 				}
 			}
 
-			if (matches != 3 && matches != 6 && matches != 9) {
+			if (!supportedFormat) {
 				std::cout << "File can't be read by this parser (Try exporting with other options)" << std::endl;
 				return false;
 			}
-			faces_.push_back(f);
+
+			if (!isQuad) {
+				faces_.push_back(f);
+			}
+			else {
+				faces_.push_back(f);
+				faces_.push_back(f2);
+			}
+		
 		}
 	}
 
 	for (int i = 0; i < faces_.size(); ++i) {
-		
 		Vec3 v1 = vertices_[faces_[i].vertexIndex[0] - 1];
 		Vec3 v2 = vertices_[faces_[i].vertexIndex[1] - 1];
 		Vec3 v3 = vertices_[faces_[i].vertexIndex[2] - 1];

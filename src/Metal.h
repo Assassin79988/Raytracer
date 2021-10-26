@@ -13,7 +13,7 @@ namespace raytracer {
 
 class raytracer::Metal : public Material {
 private:
-	float fuzz = 0.3f;
+	float fuzz = 0.1f;
 
 	Vec3 rabdomPointInUnitSphere() const;
 public:

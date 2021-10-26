@@ -6,7 +6,7 @@
 #define GOURAUD_SHADING false
 #define FLAT_SHADING false
 
-#define DEPTH 4
+#define DEPTH 2
 
 #define MAX_DIST 1000
 

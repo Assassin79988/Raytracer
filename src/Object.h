@@ -6,6 +6,7 @@
 #include "Material.h"
 #include "Metal.h"
 #include "Dieletric.h"
+#include "Lambertian.h"
 #include "BoundingBox.h"
 #include <math.h>
 #include <iostream>
@@ -16,7 +17,7 @@ namespace raytracer {
 
 class raytracer::Object {
 private:
-	Material* material_ = new Dieletric();
+	Material* material_ = new Lambertian();
 public:
 	int id;
 	virtual Material* getMaterial() { return material_; };

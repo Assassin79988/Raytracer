@@ -17,8 +17,8 @@ protected:
 	float ka_ = 0.1f;
 	float specularExponent_ = 10;
 
-	float reflection_ = 0.2;
-	float refraction_ = 1.0;
+	float reflection_ = 0.0f;
+	float refraction_ = 0.0f;
 
 	Colour ambientColour = red();
 	Colour diffuseColour = Colour(230, 216, 173);

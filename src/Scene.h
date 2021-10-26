@@ -119,7 +119,7 @@ Colour raytracer::Scene::phong(Ray ray, Object* closestObj, Vec3 normal, int dep
 		}
 
 		if (m->getRefraction() > 0.0f) {
-
+			
 		}
 	}
 

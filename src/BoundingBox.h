@@ -14,6 +14,7 @@ private:
 	Vec3 max_;
 	Vec3 min_;
 public:
+	BoundingBox() {}
 	BoundingBox(Vec3 min, Vec3 max) : max_(max), min_(min) {}
 	~BoundingBox();
 
