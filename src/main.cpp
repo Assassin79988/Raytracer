@@ -9,116 +9,268 @@
 #include "Material.h"
 #include "BVH.h"
 #include "box.h"
-#include "Metal.h"
-#include "Dieletric.h"
-#include "Lambertian.h"
 #include "Quad.h"
+#include "Cone.h"
+#include "PerspectiveCamera.h"
 #include <random>
 
 using namespace raytracer;
-# define M_PI 3.14159265358979323846
 
-/*
-* This File Is Just For Testing.
-*/
+
+void CornellBox() {
+	/* Conrell Box Scene */
+
+	std::vector<LightSource*> lights;
+	std::vector<Object*> objects;
+
+	// Defining Lights
+	LightSource* lightSources_ = new PointLight(Vec3(-5.0, -9.0f, -10.0f));
+
+	lights.push_back(lightSources_);
+
+	// Defining Materials
+	Material* back_wall_m = new Material();
+	back_wall_m->setAmbientColor(white());
+	back_wall_m->setDiffuseColor(Colour(128, 128, 128));
+	back_wall_m->setKa(0.1);
+	back_wall_m->setKd(0.7);
+	back_wall_m->setKs(0.7);
+	back_wall_m->setSpecularExp(15);
+
+
+	Material* left_wall_m = new Material();
+	left_wall_m->setAmbientColor(red());
+	left_wall_m->setDiffuseColor(Colour(0, 0, 139));
+	left_wall_m->setKa(0.1);
+	left_wall_m->setKd(0.7);
+	left_wall_m->setKs(0.7);
+	left_wall_m->setSpecularExp(15);
+
+	Material* right_wall_m = new Material();
+	right_wall_m->setAmbientColor(green());
+	right_wall_m->setDiffuseColor(Colour(0, 100, 0));
+	right_wall_m->setKa(0.1);
+	right_wall_m->setKd(0.7);
+	right_wall_m->setKs(0.7);
+	right_wall_m->setSpecularExp(15);
+
+
+	Material* floor_m = new Material();
+	floor_m->setAmbientColor(white());
+	floor_m->setDiffuseColor(Colour(128, 128, 128));
+	floor_m->setKa(0.1);
+	floor_m->setKd(0.7);
+	floor_m->setKs(0.7);
+	floor_m->setSpecularExp(15);
+
+
+	Material* roof_m = new Material();
+	roof_m->setAmbientColor(white());
+	roof_m->setDiffuseColor(Colour(128, 128, 128));
+	roof_m->setKa(0.1);
+	roof_m->setKd(0.7);
+	roof_m->setKs(0.7);
+	roof_m->setSpecularExp(15);
+
+	Material* sphere_m = new Material();
+	sphere_m->setAmbientColor(green());
+	sphere_m->setDiffuseColor(Colour(0, 100, 0));
+	sphere_m->setKa(0.1);
+	sphere_m->setKd(0.7);
+	sphere_m->setKs(0.7);
+	sphere_m->setRefraction(1.0);
+	sphere_m->setSpecularExp(15);
+
+	Material* sphere2_m = new Material();
+	sphere2_m->setAmbientColor(red());
+	sphere2_m->setDiffuseColor(Colour(0, 100, 0));
+	sphere2_m->setKa(0.1);
+	sphere2_m->setKd(0.7);
+	sphere2_m->setKs(0.7);
+	sphere2_m->setReflection(1.0);
+	sphere2_m->setSpecularExp(15);
+
+	// Defining Objects
+	Quad front_wall = Quad(Vec3(10, 10, 0), Vec3(10, -10, 0), Vec3(-10, -10, 0), Vec3(-10, 10, 0));
+	front_wall.setMaterial(back_wall_m);
+
+	Quad back_wall = Quad(Vec3(10, 10, -20), Vec3(10, -10, -20), Vec3(-10, -10, -20), Vec3(-10, 10, -20));
+	back_wall.setMaterial(back_wall_m);
+
+	Quad left_wall = Quad(Vec3(-10, 10, -20), Vec3(-10, -10, -20), Vec3(-10, -10, 0), Vec3(-10, 10, 0));
+	left_wall.setMaterial(left_wall_m);
+
+	Quad right_wall = Quad(Vec3(10, -10, -20), Vec3(10, 10, -20), Vec3(10, 10, 0), Vec3(10, -10, 0));
+	right_wall.setMaterial(right_wall_m);
+
+	Quad roof = Quad(Vec3(-10, -10, -20), Vec3(10, -10, -20), Vec3(10, -10, 0), Vec3(-10, -10, 0));
+	roof.setMaterial(roof_m);
+
+	Quad floor = Quad(Vec3(10, 10, -20), Vec3(-10, 10, -20), Vec3(-10, 10, 0), Vec3(10, 10, 0));
+	floor.setMaterial(floor_m);
+
+	Quad tallBoxFront = Quad(Vec3(-4, 10, -15), Vec3(1, 10, -16), Vec3(1, -3, -16), Vec3(-4, -3, -15));
+	tallBoxFront.setMaterial(back_wall_m);
+	Quad tallBoxLeftSide = Quad(Vec3(-7, -3, -19), Vec3(-7, 10, -19), Vec3(-4, 10, -15), Vec3(-4, -3, -15));
+	tallBoxLeftSide.setMaterial(left_wall_m);
+	Quad tallBoxRightSide = Quad(Vec3(-2, -3, -19), Vec3(-2, 10, -19), Vec3(1, -3, -16), Vec3(1, -3, -16));
+	Quad tallBoxBack = Quad(Vec3(-2, -3, -19), Vec3(-2, 10, -19), Vec3(-7, 10, -19), Vec3(-7, -3, -19));
+
+	Box smallBox = Box(Vec3(-1, 5, -15), Vec3(4, 10, -10));
+	smallBox.setMaterial(floor_m);
+
+	Sphere s1 = Sphere(Vec3(1.5, 2, -12.5), 3);
+	s1.setMaterial(sphere_m);
+
+	Sphere s2 = Sphere(Vec3(-3, -6, -16.5), 3);
+	s2.setMaterial(sphere2_m);
+
+	// Loading Scene + Defining image, imagePlane, Camera
+	objects.push_back(&front_wall);
+	objects.push_back(&back_wall);
+	objects.push_back(&left_wall);
+	objects.push_back(&right_wall);
+	objects.push_back(&roof);
+	objects.push_back(&floor);
+	objects.push_back(&tallBoxFront);
+	objects.push_back(&tallBoxLeftSide);
+	objects.push_back(&tallBoxRightSide);
+	objects.push_back(&tallBoxBack);
+	objects.push_back(&smallBox);
+	objects.push_back(&s1);
+	objects.push_back(&s2);
+
+	Camera* camera = new PerspectiveCamera(Vec3(0.0, 0.0, 0), Vec3(0, 0, -1), Vec3(0, -1, 0));
+	Image* image = new Image(500, 500);
+	ImagePlane* imagePlane = new ImagePlane(image->getCols(), image->getRows(), Vec3(-1, -1, -1), Vec3(1, 1, -1));
+	Scene scene = Scene(camera, imagePlane, image, objects, lights);
+
+	scene.renderScene();
+}
+
+void testScene2() {
+	/* Test Scene 2*/
+	std::vector<LightSource*> lights;
+	std::vector<Object*> objects;
+
+	LightSource* lightSources_ = new PointLight(Vec3(-5.0, -9.0f, -10.0f));
+
+	lights.push_back(lightSources_);
+
+	// Defining Materials
+	Material* back_wall_m = new Material();
+	back_wall_m->setAmbientColor(white());
+	back_wall_m->setDiffuseColor(Colour(128, 128, 128));
+	back_wall_m->setKa(0.1);
+	back_wall_m->setKd(0.7);
+	back_wall_m->setKs(0.7);
+	back_wall_m->setSpecularExp(15);
+
+
+	Material* left_wall_m = new Material();
+	left_wall_m->setAmbientColor(red());
+	left_wall_m->setDiffuseColor(Colour(0, 0, 139));
+	left_wall_m->setKa(0.1);
+	left_wall_m->setKd(0.7);
+	left_wall_m->setKs(0.7);
+	left_wall_m->setSpecularExp(15);
+
+	Material* right_wall_m = new Material();
+	right_wall_m->setAmbientColor(green());
+	right_wall_m->setDiffuseColor(Colour(0, 100, 0));
+	right_wall_m->setKa(0.1);
+	right_wall_m->setKd(0.7);
+	right_wall_m->setKs(0.7);
+	right_wall_m->setSpecularExp(15);
+
+
+	Material* floor_m = new Material();
+	floor_m->setAmbientColor(white());
+	floor_m->setDiffuseColor(Colour(128, 128, 128));
+	floor_m->setKa(0.1);
+	floor_m->setKd(0.7);
+	floor_m->setKs(0.7);
+	floor_m->setSpecularExp(15);
+
+
+	Material* roof_m = new Material();
+	roof_m->setAmbientColor(white());
+	roof_m->setDiffuseColor(Colour(128, 128, 128));
+	roof_m->setKa(0.1);
+	roof_m->setKd(0.7);
+	roof_m->setKs(0.7);
+	roof_m->setSpecularExp(15);
+
+	Material* sphere_m = new Material();
+	sphere_m->setAmbientColor(green());
+	sphere_m->setDiffuseColor(Colour(0, 100, 0));
+	sphere_m->setKa(0.1);
+	sphere_m->setKd(0.7);
+	sphere_m->setKs(0.7);
+	sphere_m->setRefraction(1.0);
+	sphere_m->setSpecularExp(15);
+
+	Material* sphere2_m = new Material();
+	sphere2_m->setAmbientColor(red());
+	sphere2_m->setDiffuseColor(Colour(0, 100, 0));
+	sphere2_m->setKa(0.1);
+	sphere2_m->setKd(0.7);
+	sphere2_m->setKs(0.7);
+	sphere2_m->setReflection(1.0);
+	sphere2_m->setSpecularExp(15);
+
+	// Defining Objects
+	Quad front_wall = Quad(Vec3(10, 10, 0), Vec3(10, -10, 0), Vec3(-10, -10, 0), Vec3(-10, 10, 0));
+	front_wall.setMaterial(back_wall_m);
+
+	Quad back_wall = Quad(Vec3(10, 10, -20), Vec3(10, -10, -20), Vec3(-10, -10, -20), Vec3(-10, 10, -20));
+	back_wall.setMaterial(back_wall_m);
+
+	Quad left_wall = Quad(Vec3(-10, 10, -20), Vec3(-10, -10, -20), Vec3(-10, -10, 0), Vec3(-10, 10, 0));
+	left_wall.setMaterial(left_wall_m);
+
+	Quad right_wall = Quad(Vec3(10, -10, -20), Vec3(10, 10, -20), Vec3(10, 10, 0), Vec3(10, -10, 0));
+	right_wall.setMaterial(right_wall_m);
+
+	Quad roof = Quad(Vec3(-10, -10, -20), Vec3(10, -10, -20), Vec3(10, -10, 0), Vec3(-10, -10, 0));
+	roof.setMaterial(roof_m);
+
+	Quad floor = Quad(Vec3(10, 10, -20), Vec3(-10, 10, -20), Vec3(-10, 10, 0), Vec3(10, 10, 0));
+	floor.setMaterial(floor_m);
+
+	Mesh bunny = Mesh("bunny.obj", Vec3(0.0f, 5.0f, -15.0f), Vec3(0, 0, 0), Vec3(100.0f, 100.0f, 100.0f));
+	
+	bunny.getObjects(objects);
+	objects.push_back(&front_wall);
+	objects.push_back(&back_wall);
+	objects.push_back(&left_wall);
+	objects.push_back(&right_wall);
+	objects.push_back(&roof);
+	objects.push_back(&floor);
+
+	Camera* camera = new PerspectiveCamera(Vec3(0.0, 0.0, 0), Vec3(0, 0, -1), Vec3(0, -1, 0));
+	Image* image = new Image(500, 500);
+	ImagePlane* imagePlane = new ImagePlane(image->getCols(), image->getRows(), Vec3(-1, -1, -1), Vec3(1, 1, -1));
+	Scene scene = Scene(camera, imagePlane, image, objects, lights);
+
+	scene.renderScene();
+}
+
+void testScene3() {
+
+}
+
+void testScene4() {
+
+}
+
+
 int main()
 {
-	std::random_device dev;
-	std::mt19937 rng(dev());
-	std::uniform_int_distribution<std::mt19937::result_type> randAxis(0, 2);
-	int axis = randAxis(rng);
-	
-	//std::cout << axis <<std::endl;
-	//Triangle t1 = Triangle(Vec3(2, 2, -2), Vec3(1, -1, -1), Vec3(1, 2, -6));
-	//Triangle t1 = Triangle(Vec3(-1, -1, -1), Vec3(1, -1, -10), Vec3(0, 0.75, -1));
-	Vec3 dir = Vec3(0.0,-1.0,0.0);
-	dir.normalize();
-	Plane p1 = Plane(Vec3(0.0,6.0,0.0), dir);
-	Material* m1 = new Lambertian();
-	m1->setAmbientColor(black());
-	m1->setDiffuseColor(white());
-	m1->setReflection(0.0f);
-	p1.setMaterial(m1);
-	//Sphere s1 = Sphere(Vec3(4, 30, -30), 6.0);
-	//s1.setMaterial(m1);
-	Sphere s5 = Sphere(Vec3(6.0f, 3.0f, -10.0f), 3.0);
-	Material* m2 = new Metal();
-	m2->setDiffuseColor(blue());
-	m2->setReflection(1.0f);
-	s5.setMaterial(m2);
-	Sphere s50= Sphere(Vec3(-6.0f, 3.0f, -10.0f), 3.0);
-	Material* m10 = new Lambertian();
-	m10->setDiffuseColor(green());
-	m10->setReflection(0.0f);
-	s50.setMaterial(m10);
-	Sphere s2 = Sphere(Vec3(0.0f, 3.0f, -10.0f), 3.0);
-	Material* m3 = new Lambertian();
-	m3->setReflection(0.0f);
-	m3->setAmbientColor(black());
-	m3->setDiffuseColor(blue());
-	Sphere s1 = Sphere(Vec3(0.0f, 3.0f, 10.0f), 3.0);
-	s1.setMaterial(m3);
-	Material* m4 = new Lambertian();
-	m4->setReflection(0.0f);
-	m4->setAmbientColor(black());
-	m4->setDiffuseColor(green());
-	Sphere s3 = Sphere(Vec3(10.0f, 3.0f, 20.0f), 3.0);
-	s3.setMaterial(m4);
-	Material* m5 = new Lambertian();
-	m5->setReflection(0.0f);
-	m5->setAmbientColor(black());
-	m5->setDiffuseColor(Colour(0, 255, 255));
-	Sphere s4 = Sphere(Vec3(-10.0f, 3.0f, 15.0f), 3.0);
-	s4.setMaterial(m5);
-	std::vector<Object*> objects;
-	
-	//objects.push_back(&s1);
-	//objects.push_back(&s2);
-
-	//BVH* yo = new BVH(objects);
-	//Vec3 dir = Vec3(0, 0, 1);
-	//dir.normalize();
-	//Ray ray = Ray(Vec3(0, 0, 0), dir);
-	//std::cout << s2.createBoundingBox()->hasIntersect(ray,t) << std::endl;
-	//Object* w = yo->getIntersectedObject(ray);
-	//std::cout << w << std::endl;
-
-
-	//Mesh test = Mesh("Carved pumpkin.obj", Vec3(0.0f,0.0f,-15.0f), 0.05f);
-	//Mesh test2 = Mesh("airboat.obj", Vec3(0.0f, 0.0f,-10.0f), Vec3(-M_PI / 4.0f, 0, 0), Vec3(1.0f, 1.0f, 1.0f));
-	Mesh test2 = Mesh("bunny.obj", Vec3(0.0f, 10.0f, -20.0f), Vec3(0, 0, 0), Vec3(100.0f, 100.0f, 100.0f));
-	//Mesh test2 = Mesh("alfa147.obj", Vec3(0.0f, 0.0f, -20.0f), Vec3(-M_PI / 4.0, 0, 0), Vec3(0.1f, 0.1f, 0.1f));
-	//std::cout << "Here!" << std::endl;
-	//Mesh test3 = Mesh("cube.obj", Vec3(-4.0f, 5.0f, -8.0f), Vec3(0, 0, 0), Vec3(1.0f, 1.0f, 1.0f));
-	//std::vector<Object*> objects;
-	Quad s = Quad(Vec3(2,2,-10), Vec3(2, -2, -10), Vec3(-2, -2, -5), Vec3(-2, 2, -5));
-	objects.push_back(&s);
-	std::vector<LightSource*> lights;
-	//objects.push_back(&p1);
-	//objects.push_back(&s1);
-	//objects.push_back(&s2);
-	//objects.push_back(&s3);
-	//objects.push_back(&s4);
-	//objects.push_back(&s5);
-	//objects.push_back(&s50);
-	//objects.push_back(&s2);
-	//test.getObjects(objects);
-	//test2.getObjects(objects);
-	//std::cout << objects.size() << std::endl;
-	//test3.getObjects(objects);
-	//Box b1 = Box(Vec3(1, 2, -5), Vec3(-1, -10,-15));
-	//objects.push_back(&b1);
-	//objects.push_back(&b2);
-	LightSource* lightSources_ = new PointLight(Vec3(0.0, -20.0, 0));
-	lights.push_back(lightSources_);
-	//LightSource* lightSource2 = new PointLight(Vec3(0.0, 0.0, 0));
-	//lights.push_back(lightSource2);
-	//LightSource* lightSource3 = new PointLight(Vec3(5.0, 3.0, 3));
-	//lights.push_back(lightSource3);
-	Scene scene = Scene(objects, lights);
-	scene.renderScene();
-
-
+	//CornellBox();
+	testScene2();
+	//testScene3();
+	//testScene4();
 
 	return EXIT_SUCCESS;
 }

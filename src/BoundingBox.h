@@ -11,16 +11,23 @@ namespace raytracer {
 
 class raytracer::BoundingBox {
 private:
+	// max coordinates
 	Vec3 max_;
+	// min coordinates
 	Vec3 min_;
 public:
+	// Constructures
 	BoundingBox() {}
 	BoundingBox(Vec3 min, Vec3 max) : max_(max), min_(min) {}
 	~BoundingBox();
 
+	/* Getters/ Setters*/
 	Vec3 getMax() { return max_; }
 	Vec3 getMin() { return min_; }
+	void setMax(Vec3 max) { max_ = max; }
+	void setMin(Vec3 min) { min_ = min; }
 
+	/* Checks for intersect */
 	inline bool hasIntersect(Ray ray) const;
 };
 

@@ -19,6 +19,7 @@ private:
 	float yRows_;
 
 public:
+	// Constructors
 	ImagePlane() {};
 	ImagePlane(int cols, int rows, Vec3 llc, Vec3 urc) : xCols_(cols), yRows_(rows), llc_(llc), urc_(urc) {}
 

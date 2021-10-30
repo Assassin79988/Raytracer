@@ -13,35 +13,46 @@ namespace raytracer {
 	struct Node;
 }
 
+// Information foreach node on the BVH
 struct raytracer::Node {
 public:
-	Node(std::vector<Object*> objects);
-	Node* left = nullptr;
-	Node* right = nullptr;
-	BoundingBox* bounds;
-	std::vector<Object*> objects_;
-	bool isLeaf;
+	Node(std::vector<Object*> objects); // objects stored in ndoe
+	Node* left = nullptr;			    // left ndoe 
+	Node* right = nullptr;			    // right node
+	BoundingBox* bounds;				// bounding box for the group of objects
+	std::vector<Object*> objects_;		// objects stored in node
+	bool isLeaf;						// Store weather this node is a leaf or not
 };
 
 class raytracer::BVH {
 private:
+	// root node
 	Node* root_;
+	// list of all objects
 	std::vector<Object*> objects_;
-
+	// compares two bounding boxes on a axis
 	static bool box_compare(const Object* obj1, const Object* obj2, int axis);
+	// compares two bounding boxes on the x axis
 	static bool box_compare_x(const Object* obj1, const Object* obj2);
+	// compares two bounding boxes on the y axis
 	static bool box_compare_y(const Object* obj1, const Object* obj2);
+	// compares two bounding boxes on the z axis
 	static bool box_compare_z(const Object* obj1, const Object* obj2);
 
+	// builds the BVH from a list of objects
 	Node* bulidBVH(std::vector<Object*> objects);
-	Node* getClosestObjectNode(Node* parnetNode, const Ray& ray, std::vector<Object*>& nodes);
+	// Finds a list of objects that the ray could intersect
+	Node* FindPossiableIntersections(Node* parnetNode, const Ray& ray, std::vector<Object*>& nodes);
 public:
+	// Constructures
 	BVH(std::vector<Object*> objects);
 	~BVH() { delete root_; }
 	
-
+	// Creates a bounding box for a vector of objects
 	static BoundingBox* createBoundingBox(std::vector<Object*> objects);
+	// Merge two bounding boxes
 	static BoundingBox* mergeBoundingBox(BoundingBox* boxOne, BoundingBox* boxTwo);
+	// Finds objects whos bounding box was intersected
 	std::vector<raytracer::Object*> getIntersectedObject(const Ray& ray);
 };
 
@@ -54,12 +65,12 @@ raytracer::Node::Node(std::vector<Object*> objects) {
 
 std::vector<raytracer::Object*> raytracer::BVH::getIntersectedObject(const Ray& ray) {
 	std::vector<Object*> objects;
-	Node* temp = getClosestObjectNode(root_, ray, objects);
+	Node* temp = FindPossiableIntersections(root_, ray, objects);
 
 	return objects;
 }
 
-raytracer::Node* raytracer::BVH::getClosestObjectNode(Node* parnetNode, const Ray& ray, std::vector<Object*>& objects) {
+raytracer::Node* raytracer::BVH::FindPossiableIntersections(Node* parnetNode, const Ray& ray, std::vector<Object*>& objects) {
 	if (parnetNode != nullptr) {
 		if (parnetNode->bounds->hasIntersect(ray)) {
 			if (parnetNode->isLeaf) {
@@ -67,14 +78,14 @@ raytracer::Node* raytracer::BVH::getClosestObjectNode(Node* parnetNode, const Ra
 				return parnetNode;
 			}
 			else {
-				Node* left = this->getClosestObjectNode(parnetNode->left, ray, objects);
-				Node* right = this->getClosestObjectNode(parnetNode->right, ray, objects);
+				Node* left = this->FindPossiableIntersections(parnetNode->left, ray, objects);
+				Node* right = this->FindPossiableIntersections(parnetNode->right, ray, objects);
 
 				if (left != nullptr) return left;
 				if (right != nullptr) return right;
 			}
 		}
-		else  return nullptr;
+		else return nullptr;
 	}
 
 	return nullptr;

@@ -9,28 +9,25 @@ namespace raytracer {
 }
 
 class raytracer::Camera {
-private:
+protected:
+	// default position
 	const Vec3 DEFAULT_POSITION = Vec3(0.0, 0.0, 0.0);
-	// TODO: Rotation
-	Vec3 position_;
-	Vec3 rotation_;
+	// Camera position, direction, up vector and right vector
+	Vec3 position_, direction_, up_, right_;
 public:
-	Camera() : position_(DEFAULT_POSITION) {}
-	Camera(Vec3 position) : position_(position) {}
-
+	/* Getters and Setters */
 	Vec3 getPosition() { return position_; }
 	void setPosition(Vec3 position) { position_ = position; }
+	Vec3 getDirection() { return direction_; }
+	void setDirection(Vec3 direction) { direction_ = direction; }
+	Vec3 getUp() { return up_; }
+	void setUp(Vec3 up) { up_ = up; }
+	Vec3 getRight() { return right_; }
+	void setRight(Vec3 right) { right_ = right; }
 
-	inline Ray generateRay(Vec3 const& pt);
+	/* Generate Rays from the camera to the image plane */
+	virtual inline Ray generateRay(Vec3 const& pt) const = 0;
 };
-
-inline raytracer::Ray raytracer::Camera::generateRay(Vec3 const& pt) {
-	Vec3 origin = position_;
-	Vec3 direction = pt - origin;
-	direction.normalize();
-
-	return Ray(origin, direction);
-}
 
 #endif
 

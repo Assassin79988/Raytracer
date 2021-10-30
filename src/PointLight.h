@@ -8,12 +8,12 @@ namespace raytracer {
 }
 
 class raytracer::PointLight : public LightSource {
-private:
-
 public:
 	PointLight() { position_ = DEFAULT_POSITION; }
 	PointLight(Vec3 position) { position_ = position; }
+	~PointLight() {}
 
+	// Method to compute the light vector
 	Vec3 computeLightVector(Vec3 intersection) const override;
 };
 

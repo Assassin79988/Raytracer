@@ -1,4 +1,3 @@
-#include "Material.h"
 
 /*
 Colour raytracer::Material::blinnPhong(Vec3 viewer, Vec3 normal, Vec3 lightVector) const {

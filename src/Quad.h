@@ -16,10 +16,13 @@ private:
 	// sub triangles
 	Triangle t1_, t2_;
 public:
-	Quad() {}
+	// Constuctors / Deconstructors
+	Quad() { id = ++objectCount; }
 	// Vertices are define in ccw order
-	Quad(Vec3 vertex1, Vec3 vertex2, Vec3 vertex3, Vec3 vertex4) : vertex1_(vertex1), vertex2_(vertex2), vertex3_(vertex3), vertex4_(vertex4), t1_(Triangle(vertex1_, vertex2_, vertex3_)), t2_(Triangle(vertex1_, vertex4_, vertex3_)){}
+	Quad(Vec3 vertex1, Vec3 vertex2, Vec3 vertex3, Vec3 vertex4) : vertex1_(vertex1), vertex2_(vertex2), vertex3_(vertex3), vertex4_(vertex4), t1_(Triangle(vertex1_, vertex2_, vertex3_)), t2_(Triangle(vertex1_, vertex4_, vertex3_)){ id = ++objectCount; }
+	~Quad() {}
 
+	/* Getters/Setters */
 	Triangle getTriangle1() { return t1_; }
 	Triangle getTriangle2() { return t2_; }
 	Vec3 getVertex1() { return vertex1_; }
@@ -27,6 +30,7 @@ public:
 	Vec3 getVertex3() { return vertex3_; }
 	Vec3 getVertex4() { return vertex4_; }
 
+	/* Overriden methods from base class */
 	Vec3 getNormal(Vec3 const pt) const override;
 	inline bool hasIntersect(Ray ray, float& t) const override;
 	BoundingBox* createBoundingBox() const override;
@@ -48,6 +52,7 @@ inline bool raytracer::Quad::hasIntersect(Ray ray, float& t) const {
 }
 
 raytracer::BoundingBox* raytracer::Quad::createBoundingBox() const {
+	// Finds the min and max coordinates to create a bounding box.
 	float xMax = fmax(vertex1_[0], fmax(vertex2_[0], fmax(vertex3_[0], vertex4_[0])));
 	float xMin = fmin(vertex1_[0], fmin(vertex2_[0], fmin(vertex3_[0], vertex4_[0])));
 	float yMax = fmax(vertex1_[1], fmax(vertex2_[1], fmax(vertex3_[1], vertex4_[1])));

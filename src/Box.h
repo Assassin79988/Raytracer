@@ -11,12 +11,17 @@ namespace raytracer {
 
 class raytracer::Box : public Object {
 private:
+	// upper right conner
 	Vec3 urc_;
+	// lower left conner
 	Vec3 llc_;
 public:
-	Box() {}
-	Box(Vec3 llc, Vec3 urc) : llc_(llc), urc_(urc) {}
+	// Constructures
+	Box() { id = ++objectCount; }
+	Box(Vec3 llc, Vec3 urc) : llc_(llc), urc_(urc) { id = ++objectCount; }
+	~Box() {}
 
+	/* Overriden methods from base class */
 	Vec3 getNormal(Vec3 const pt) const override;
 	inline  bool hasIntersect(Ray ray, float& t) const override;
 	BoundingBox* createBoundingBox() const override { return new BoundingBox(llc_, urc_); }
