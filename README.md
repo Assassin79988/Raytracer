@@ -5,3 +5,5 @@ Ray Tracer
 ![result](https://user-images.githubusercontent.com/60577496/139518756-1f247e0e-cea5-45cd-9edf-8f9ccf2c04a5.png)
 
 ![result](https://user-images.githubusercontent.com/60577496/139518785-eb5d3af4-3244-4760-9a9c-3200f3c634b9.png)
+
+![result](https://user-images.githubusercontent.com/60577496/139518829-a380b348-de6f-46bb-b0d3-62a508115b37.png)
