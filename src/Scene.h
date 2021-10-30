@@ -280,9 +280,9 @@ Colour raytracer::Scene::shading(Ray ray, Object* closestObj, Vec3 normal, int d
 	//	textureColor = closestObj->getTextureAt(ray.compute(t));
 	//}
 	// computes the total pixel colour (the diffuse and specular terms are averaged for each light source in the scene)
-	colour[0] = clamp(ka * ambientColour[0] + diffuseAndSpecColour[0] / (float)lights_.size() + reflectionColour[0] + refractionColour[0]);
-	colour[1] = clamp(ka * ambientColour[1] + diffuseAndSpecColour[1] / (float)lights_.size() + reflectionColour[1] + refractionColour[1]);
-	colour[2] = clamp(ka * ambientColour[2] + diffuseAndSpecColour[2] / (float)lights_.size() + reflectionColour[2] + refractionColour[2]);
+	colour[0] = clamp(ka * ambientColour[0] + diffuseAndSpecColour[0] / ((lights_.size() != 0) ? (float)lights_.size() : 1) + reflectionColour[0] + refractionColour[0]);
+	colour[1] = clamp(ka * ambientColour[1] + diffuseAndSpecColour[1] / ((lights_.size() != 0) ? (float)lights_.size() : 1) + reflectionColour[1] + refractionColour[1]);
+	colour[2] = clamp(ka * ambientColour[2] + diffuseAndSpecColour[2] / ((lights_.size() != 0) ? (float)lights_.size() : 1) + reflectionColour[2] + refractionColour[2]);
 	return colour;
 }
 
