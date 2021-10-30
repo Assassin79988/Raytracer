@@ -63,6 +63,8 @@ public:
 	float getKa() const { return ka_; }
 	float getKd() const { return kd_; }
 	float getKs() const { return ks_; }
+	float getIOR(float ir) { return ir_; }
+	float getFuzz(float ir) { return fuzz_; }
 
 	void setAmbientColor(Colour colour) { ambientColour = colour; }
 	void setDiffuseColor(Colour colour) { diffuseColour = colour; }
@@ -72,6 +74,8 @@ public:
 	void setKa(float ka) { ka_ = ka; }
 	void setKd(float kd) { kd_ = kd; }
 	void setKs(float ks) { ks_ = ks; }
+	void setIOR(float ir) { ir_ = ir; }
+	void setFuzz(float fuzz) { fuzz_ = fuzz; }
 
 	// Finds the reflected ray
 	bool getReflectedRay(Vec3 rayDirection, Vec3 intersection, Vec3 normal, Ray& ray) const;
