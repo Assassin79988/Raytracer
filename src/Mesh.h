@@ -107,7 +107,7 @@ void raytracer::Mesh::getAffineTransform(Vec3 position, Vec3 rotation, Vec3 scal
 	zRotMatrix(1, 1) = cos(rotation[2]);
 
 	// computes total transform
-	affineTransform_ = translationMatrix * scaleMatrix * xRotMatrix * yRotMatrix * zRotMatrix;
+	affineTransform_ = xRotMatrix * yRotMatrix * zRotMatrix * translationMatrix * scaleMatrix;
 }
 
 void raytracer::Mesh::getObjects(std::vector<Object*>& objects) {
